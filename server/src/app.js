@@ -31,7 +31,7 @@ app.use('/v1', planetsRouter);
 // app.use('/v1', launchesRouter);
 
 // ---------- React SPA Fallback ----------
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
