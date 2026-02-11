@@ -4,7 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 const planetsRouter = require('./routes/planets/planets.router');
-// const launchesRouter = require('./routes/launches/launches.router');
+const launchesRouter = require('./routes/launches/launches.router');
 
 const app = express();
 
@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // ---------- API Routes ----------
 app.use('/v1', planetsRouter);
-// app.use('/v1', launchesRouter);
+app.use('/v1', launchesRouter);
 
 // ---------- React SPA Fallback ----------
 app.get(/.*/, (req, res) => {
