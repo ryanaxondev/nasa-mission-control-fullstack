@@ -27,8 +27,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ---------- API Routes ----------
-app.use('/v1', planetsRouter);
-app.use('/v1', launchesRouter);
+app.use('/v1/planets', planetsRouter);
+app.use('/v1/launches', launchesRouter);
 
 // ---------- React SPA Fallback ----------
 app.get(/.*/, (req, res) => {
