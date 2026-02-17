@@ -1,7 +1,6 @@
-// launches.controller
-
 const {
   getAllLaunches,
+  getLaunchById,
   addNewLaunch,
   existsLaunchWithId,
   abortLaunchById,
@@ -36,17 +35,27 @@ function httpAddNewLaunch(req, res) {
 }
 
 function httpAbortLaunch(req, res) {
+
   const launchId = Number(req.params.id);
 
-  if(!existsLaunchWithId(launchId)) {
+  if (!existsLaunchWithId(launchId)) {
     return res.status(404).json({
-      error: 'Launch not found!'
+      error: 'Launch not found!',
     });
   }
-  
-  const aborted = abortLaunchById(launchId);
-  return res.status(200).json(aborted);
 
+  const success = abortLaunchById(launchId);
+
+  if (!success) {
+    return res.status(500).json({
+      error: 'Failed to abort launch',
+    });
+  }
+
+  // fetch updated launch
+  const abortedLaunch = getLaunchById(launchId);
+
+  return res.status(200).json(abortedLaunch);
 }
 
 module.exports = {
