@@ -63,12 +63,13 @@ root
 
 **Tech Stack**
 
-- React 17
-- React Router
-- Arwes UI Framework
-- Custom React Hooks
-- Fetch API
-- Modular Component Design
+- Node.js
+- Express
+- RESTful API design
+- CSV planetary data processing
+- Modular MVC-inspired structure
+- Jest (Integration Testing)
+- Supertest (HTTP request simulation)
 
 **Key Features**
 
@@ -143,11 +144,52 @@ POST /v1/launches
 }
 ```
 
-### ❌ Abort Launch
+### ❌ Abort Launch (Soft Delete)
 
-```
-DELETE /v1/launches/:id
-```
+Performs a **soft abort** operation:
+
+- Does not remove launch from storage
+- Marks launch as:
+  - `upcoming: false`
+  - `success: false`
+- Returns:
+  - `200` on successful abort
+  - `404` if launch does not exist
+
+Designed to preserve historical mission data integrity.
+
+---
+
+## 🧪 Backend Testing Strategy
+
+The backend uses **integration testing** to validate full request lifecycles.
+
+### Testing Stack
+
+- Jest
+- Supertest
+
+### Testing Principles
+
+- Tests import `app.js` (not `server.js`)
+- No real port binding during tests
+- Full request pipeline is validated:
+  - Middleware
+  - Router
+  - Controller
+  - Model logic
+- API contracts are enforced through response validation
+- Date normalization is tested using timestamp comparison
+
+### Current Coverage
+
+- GET /v1/planets
+- GET /v1/launches
+- POST /v1/launches
+- DELETE /v1/launches/:id (soft abort logic)
+- 404 handling for non-existing launches
+
+All integration tests passing.
 
 ---
 
@@ -176,6 +218,19 @@ This ensures:
 - Clear architecture layering
 
 ---
+
+## 🧩 Development Workflow
+
+This project follows a strict feature-complete workflow:
+
+1. Implement feature fully
+2. Validate behavior manually
+3. Write integration tests
+4. Ensure all tests pass
+5. Commit as a complete logical unit with detailed commit body
+
+No partial feature commits.
+Each commit represents a stable architectural milestone.
 
 ## ⚙️ Running the Project Locally
 
@@ -219,7 +274,7 @@ PORT=8000
 
 ```bash
 cd server
-npm run dev
+npm run watch
 ```
 
 Server runs at:
@@ -241,6 +296,14 @@ App runs at:
 
 ```
 http://localhost:3000
+```
+
+---
+
+### 🧪 Run All Tests From Root
+
+```bash
+npm test
 ```
 
 ---
