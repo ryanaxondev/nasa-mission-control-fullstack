@@ -30,32 +30,26 @@ function getAllLaunches() {
 function addNewLaunch(launch) {
   latestFlightNumber++;
 
-  launches.set(
-    latestFlightNumber,
-    {
-      ...launch,
-      flightNumber: latestFlightNumber,
-      customers: ['AXON', 'NASA'],
-      upcoming: true,
-      success: true,
-    }
-  );
+  const newLaunch = {
+    ...launch,
+    flightNumber: latestFlightNumber,
+    customers: ['AXON', 'NASA'],
+    upcoming: true,
+    success: true,
+  };
+
+  launches.set(latestFlightNumber, newLaunch);
+
+  return newLaunch;
 }
 
-/**
- * Abort launch using immutable update
- * Returns boolean indicating success
- */
 function abortLaunchById(launchId) {
-
   const existingLaunch = launches.get(launchId);
 
-  // Improvement 1: Safe guard
   if (!existingLaunch) {
     return false;
   }
 
-  // Improvement 2: Immutable update
   const abortedLaunch = {
     ...existingLaunch,
     upcoming: false,
@@ -64,7 +58,6 @@ function abortLaunchById(launchId) {
 
   launches.set(launchId, abortedLaunch);
 
-  // Improvement 3: Return boolean
   return true;
 }
 

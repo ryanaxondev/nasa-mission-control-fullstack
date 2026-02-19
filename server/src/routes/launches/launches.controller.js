@@ -29,18 +29,17 @@ function httpAddNewLaunch(req, res) {
 
   launch.launchDate = launchDate;
 
-  addNewLaunch(launch);
+  const createdLaunch = addNewLaunch(launch);
 
-  return res.status(201).json(launch);
+  return res.status(201).json(createdLaunch);
 }
 
 function httpAbortLaunch(req, res) {
-
   const launchId = Number(req.params.id);
 
   if (!existsLaunchWithId(launchId)) {
     return res.status(404).json({
-      error: 'Launch not found!',
+      error: 'Launch not found',
     });
   }
 
@@ -52,7 +51,6 @@ function httpAbortLaunch(req, res) {
     });
   }
 
-  // fetch updated launch
   const abortedLaunch = getLaunchById(launchId);
 
   return res.status(200).json(abortedLaunch);
