@@ -2,7 +2,7 @@ const launches = new Map();
 
 let latestFlightNumber = 100;
 
-const launch = {
+const initialLaunch = {
   flightNumber: 100,
   mission: 'Kepler Exploration X',
   rocket: 'Explorer IS1',
@@ -13,7 +13,13 @@ const launch = {
   success: true,
 };
 
-launches.set(launch.flightNumber, launch);
+function loadInitialData() {
+  launches.clear();
+  launches.set(initialLaunch.flightNumber, { ...initialLaunch });
+  latestFlightNumber = 100;
+}
+
+loadInitialData();
 
 function existsLaunchWithId(launchId) {
   return launches.has(launchId);
@@ -61,10 +67,15 @@ function abortLaunchById(launchId) {
   return true;
 }
 
+function resetLaunches() {
+  loadInitialData();
+}
+
 module.exports = {
   existsLaunchWithId,
   getLaunchById,
   getAllLaunches,
   addNewLaunch,
   abortLaunchById,
+  resetLaunches,
 };

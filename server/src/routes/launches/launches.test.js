@@ -1,6 +1,12 @@
 const request = require('supertest');
 const app = require('../../app');
 
+const { resetLaunches } = require('../../models/launches.model');
+
+beforeEach(() => {
+  resetLaunches();
+});
+
 describe('Test GET /launches', () => {
     test('It should respond with 200 sucess', async () => {
         const response = await request(app)
