@@ -7,13 +7,27 @@ beforeEach(() => {
   resetLaunches();
 });
 
-describe('Test GET /launches', () => {
-    test('It should respond with 200 sucess', async () => {
-        const response = await request(app)
-        .get('/v1/launches')
-        .expect('Content-Type', /json/)
-        .expect(200);
-    });
+
+test('It should respond with 200 and return launch array', async () => {
+  const response = await request(app)
+    .get('/v1/launches')
+    .expect('Content-Type', /json/)
+    .expect(200);
+
+  expect(Array.isArray(response.body)).toBe(true);
+
+  expect(response.body.length).toBeGreaterThan(0);
+
+  const launch = response.body[0];
+
+  expect(launch).toHaveProperty('flightNumber');
+  expect(launch).toHaveProperty('mission');
+  expect(launch).toHaveProperty('rocket');
+  expect(launch).toHaveProperty('launchDate');
+  expect(launch).toHaveProperty('target');
+  expect(launch).toHaveProperty('customers');
+  expect(launch).toHaveProperty('upcoming');
+  expect(launch).toHaveProperty('success');
 });
 
 
@@ -39,18 +53,24 @@ describe('Test POST /launch', () => {
     };
 
     test('It should respond with 201 success', async () => {
-        const response = await request(app)
-            .post('/v1/launches')
-            .send(completeLaunchData)
-            .expect('Content-Type', /json/)
-            .expect(201);
+    const response = await request(app)
+      .post('/v1/launches')
+      .send(completeLaunchData)
+      .expect('Content-Type', /json/)
+      .expect(201);
 
-        const requestDate = new Date(completeLaunchData.launchDate).valueOf();
-        const responseDate = new Date(response.body.launchDate).valueOf();
+    const requestDate = new Date(completeLaunchData.launchDate).valueOf();
+    const responseDate = new Date(response.body.launchDate).valueOf();
 
-        expect(responseDate).toBe(requestDate);
-        expect(response.body).toMatchObject(launchDataWithoutDate);
-    });
+    expect(responseDate).toBe(requestDate);
+    expect(response.body).toMatchObject(launchDataWithoutDate);
+    expect(response.body.flightNumber).toBeDefined();
+    expect(typeof response.body.flightNumber).toBe('number');
+    expect(response.body.success).toBe(true);
+    expect(response.body.upcoming).toBe(true);
+    expect(Array.isArray(response.body.customers)).toBe(true);
+    expect(response.body.customers).toContain('NASA');
+  });
 
     test('It should catch missing required properties', async() => {
       const response = await request(app)
@@ -102,6 +122,27 @@ describe('DELETE /v1/launches/:id', () => {
 
     expect(deleteResponse.body.upcoming).toBe(false);
     expect(deleteResponse.body.success).toBe(false);
+
+    const verifyResponse = await request(app)
+      .get('/v1/launches')
+      .expect(200);
+
+    const abortedLaunch = verifyResponse.body.find(
+      l => l.flightNumber === createdLaunchId
+    );
+
+    expect(abortedLaunch.upcoming).toBe(false);
+    expect(abortedLaunch.success).toBe(false);
+  });
+
+  test('It should return 404 for non-existing launch', async () => {
+    await request(app)
+      .delete('/v1/launches/99999')
+      .expect(404)
+      .expect('Content-Type', /json/)
+      .expect({
+        error: 'Launch not found'
+      });
   });
 
 });
