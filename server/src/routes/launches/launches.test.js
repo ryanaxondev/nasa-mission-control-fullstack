@@ -1,6 +1,8 @@
 const request = require('supertest');
 const app = require('../../app');
 
+const { createLaunch } = require('../../test/factories/launch.factory');
+
 const { resetLaunches } = require('../../models/launches.model');
 
 beforeEach(() => {
@@ -32,27 +34,11 @@ test('It should respond with 200 and return launch array', async () => {
 
 
 describe('Test POST /launch', () => {
-    const completeLaunchData = {
-      mission: 'USS Enterprise',
-      rocket: 'NCC 170-D',
-      target: 'Kepler-186 f',
-      launchDate: 'January 4, 2028',
-  };
 
-    const launchDataWithoutDate = {
-      mission: 'USS Enterprise',
-      rocket: 'NCC 170-D',
-      target: 'Kepler-186 f',
-    };
+  test('It should respond with 201 success', async () => {
 
-    const launchDataWithInvalidDate = {
-      mission: 'USS Enterprise',
-      rocket: 'NCC 170-D',
-      target: 'Kepler-186 f',
-      launchDate: 'zoot'
-    };
+    const completeLaunchData = createLaunch();
 
-    test('It should respond with 201 success', async () => {
     const response = await request(app)
       .post('/v1/launches')
       .send(completeLaunchData)
@@ -63,7 +49,10 @@ describe('Test POST /launch', () => {
     const responseDate = new Date(response.body.launchDate).valueOf();
 
     expect(responseDate).toBe(requestDate);
-    expect(response.body).toMatchObject(launchDataWithoutDate);
+
+    const { launchDate, ...launchWithoutDate } = completeLaunchData;
+    expect(response.body).toMatchObject(launchWithoutDate);
+
     expect(response.body.flightNumber).toBeDefined();
     expect(typeof response.body.flightNumber).toBe('number');
     expect(response.body.success).toBe(true);
@@ -72,29 +61,36 @@ describe('Test POST /launch', () => {
     expect(response.body.customers).toContain('NASA');
   });
 
-    test('It should catch missing required properties', async() => {
-      const response = await request(app)
-        .post('/v1/launches')
-        .send(launchDataWithoutDate)
-        .expect('Content-Type', /json/)
-        .expect(400);
+  test('It should catch missing required properties', async () => {
 
-        expect(response.body).toStrictEqual({
-          error: 'Missing required launch property',
-        });
+    const launchDataWithoutDate = createLaunch({ launchDate: undefined });
+
+    const response = await request(app)
+      .post('/v1/launches')
+      .send(launchDataWithoutDate)
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body).toStrictEqual({
+      error: 'Missing required launch property',
     });
+  });
 
-    test('It should catch invalid dates', async() => {
-      const response = await request(app)
-        .post('/v1/launches')
-        .send(launchDataWithInvalidDate)
-        .expect('Content-Type', /json/)
-        .expect(400);
+  test('It should catch invalid dates', async () => {
 
-      expect(response.body).toStrictEqual({
-        error: 'Invalid launch date',
-      });
-  });  
+    const launchDataWithInvalidDate = createLaunch({ launchDate: 'zoot' });
+
+    const response = await request(app)
+      .post('/v1/launches')
+      .send(launchDataWithInvalidDate)
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body).toStrictEqual({
+      error: 'Invalid launch date',
+    });
+  });
+
 });
 
 
@@ -102,12 +98,7 @@ describe('DELETE /v1/launches/:id', () => {
 
   test('It should abort an existing launch', async () => {
 
-    const newLaunch = {
-      mission: 'Test Mission',
-      rocket: 'Test Rocket',
-      launchDate: 'January 1, 2030',
-      target: 'Kepler-442 b'
-    };
+    const newLaunch = createLaunch();
 
     const postResponse = await request(app)
       .post('/v1/launches')
@@ -144,17 +135,5 @@ describe('DELETE /v1/launches/:id', () => {
         error: 'Launch not found'
       });
   });
-
-});
-
-test('It should return 404 for non-existing launch', async () => {
-
-  await request(app)
-    .delete('/v1/launches/99999')
-    .expect(404)
-    .expect('Content-Type', /json/)
-    .expect({
-      error: 'Launch not found'
-    });
 
 });
